@@ -568,3 +568,41 @@ $("#install-x").addEventListener("click",()=>{$("#install-tip").style.display="n
 
 renderMessages(); renderEvents(); renderPrayers();
 </script>
+
+<!-- ===== Sermon Notes v1 (2026-09-01, Daraja Studio) — the screen, in your pocket ===== -->
+<script>
+(function(){
+var NOTES = {
+  series:"Direct Line", title:"Persistent Prayer", who:"Joe Boerman", date:"August 30",
+  ref:"Luke 18:1–8", vid:"u9XnGO5gWsQ",
+  slides:[
+    {h:"The parable", pts:["A widow who would not quit — and a judge who finally listened (Luke 18:1–8)","Jesus told it “so they would always pray and not give up” (v.1)"]},
+    {h:"Persistent ≠ pestering", pts:["God is not the reluctant judge — the parable argues from lesser to greater","If an unjust judge answers persistence, how much more a loving Father"]},
+    {h:"Why keep praying?", pts:["Persistence changes US — it shapes what we actually want","Delay is not denial","“Will He find faith on the earth?” — the real question is ours (v.8)"]},
+    {h:"This week", pts:["Pick ONE prayer you had quietly given up on","Bring it back every day this week","Tell one person you’re praying — let them ask you about it"]}
+  ]
+};
+var KEY='imm_sermon_notes_me';
+var btn=document.createElement('button');
+btn.id='sermonNotesBtn'; btn.textContent='📝'; btn.title='Sermon notes — this week’s message';
+btn.style.cssText='position:fixed;right:14px;bottom:calc(88px + env(safe-area-inset-bottom));z-index:9990;width:56px;height:56px;border-radius:50%;border:none;background:#61b000;color:#fff;font-size:24px;box-shadow:0 6px 20px rgba(0,0,0,.35);cursor:pointer';
+document.body.appendChild(btn);
+var ov=document.createElement('div');
+ov.style.cssText='display:none;position:fixed;inset:0;z-index:9995;background:rgba(12,14,12,.72);align-items:flex-end;justify-content:center;';
+var saved=''; try{ saved=localStorage.getItem(KEY)||''; }catch(e){}
+ov.innerHTML='<div id="snCard" style="background:#fff;color:#22261f;width:100%;max-width:560px;max-height:88vh;border-radius:18px 18px 0 0;overflow:auto;padding:20px 18px calc(20px + env(safe-area-inset-bottom));font-family:-apple-system,sans-serif">'
+ +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><div style="font-size:12px;font-weight:800;letter-spacing:.06em;color:#61b000">CURRENT SERIES · '+NOTES.series.toUpperCase()+'</div><button id="snClose" style="border:none;background:none;font-size:22px;cursor:pointer;color:#888">✕</button></div>'
+ +'<h2 style="margin:2px 0 2px;font-size:22px">📝 '+NOTES.title+'</h2>'
+ +'<div style="font-size:13px;color:#6d675d;margin-bottom:12px">'+NOTES.ref+' · '+NOTES.who+' · '+NOTES.date+' · <a href="https://www.youtube.com/watch?v='+NOTES.vid+'" target="_blank" style="color:#61b000;font-weight:700">▶ watch</a></div>'
+ +NOTES.slides.map(function(sl){ return '<div style="border-left:3px solid #61b000;background:#f4f6f0;border-radius:0 10px 10px 0;padding:10px 12px;margin-bottom:10px"><b style="font-size:14.5px">'+sl.h+'</b><ul style="margin:6px 0 0;padding-left:18px;font-size:14px;line-height:1.55">'+sl.pts.map(function(p){return '<li style="margin-bottom:4px">'+p+'</li>';}).join('')+'</ul></div>'; }).join('')
+ +'<div style="margin-top:14px"><b style="font-size:14px">✍️ My notes</b><textarea id="snMine" placeholder="What stood out to you… (stays on your phone)" style="width:100%;min-height:90px;margin-top:6px;font:inherit;font-size:14px;padding:10px;border:1px solid #d8d4c8;border-radius:10px;box-sizing:border-box"></textarea></div>'
+ +'<p style="font-size:11.5px;color:#948c7e;margin:10px 0 0;text-align:center">No more photographing the screen — the slides are right here. 😊</p>'
+ +'</div>';
+document.body.appendChild(ov);
+btn.onclick=function(){ ov.style.display='flex'; };
+ov.addEventListener('click',function(e){ if(e.target===ov) ov.style.display='none'; });
+ov.querySelector('#snClose').onclick=function(){ ov.style.display='none'; };
+var ta=ov.querySelector('#snMine'); ta.value=saved;
+ta.addEventListener('input',function(){ try{ localStorage.setItem(KEY,ta.value); }catch(e){} });
+})();
+</script>

@@ -607,12 +607,30 @@ ta.addEventListener('input',function(){ try{ localStorage.setItem(KEY,ta.value);
 })();
 </script>
 
-<script id="dj-imm-v1">
-/* the audit (10 Sep 2026): no language on the page, and the notes button is only an emoji */
+
+<script id="dj-imm-v2">
+/* the 425-things audit (10 Sep 2026): 26 pieces of text under 13px and 5 tap targets
+   under 40px. The church app does not carry the Daraja house layer, so the same floors
+   are applied here directly. Reading the computed size and writing an inline value is
+   the only thing that beats every stylesheet. */
 (function(){
   try{ document.documentElement.lang = document.documentElement.lang || 'en'; }catch(e){}
   function name(){ var b=document.getElementById('sermonNotesBtn'); if(b && !b.getAttribute('aria-label')) b.setAttribute('aria-label','Sermon notes'); }
-  name(); [600,2000].forEach(function(ms){ setTimeout(name, ms); });
-  try{ new MutationObserver(name).observe(document.body||document.documentElement,{childList:true,subtree:true}); }catch(e){}
+  function floors(){
+    var all = document.body ? document.body.getElementsByTagName('*') : [];
+    for(var i=0;i<all.length;i++){
+      var el=all[i]; if(el.__f) continue;
+      var tag=el.tagName; if(tag==='SCRIPT'||tag==='STYLE'||tag==='SVG'||tag==='PATH') continue;
+      var cs=getComputedStyle(el); if(cs.display==='none') continue;
+      var own=false; for(var c=el.firstChild;c;c=c.nextSibling){ if(c.nodeType===3&&c.textContent.trim().length>1){own=true;break;} }
+      if(own){ var fs=parseFloat(cs.fontSize); if(fs&&fs<13){ el.style.setProperty('font-size','13px','important'); var lh=parseFloat(cs.lineHeight); if(lh&&lh<15.6) el.style.setProperty('line-height','1.25','important'); } }
+      var ctl = tag==='BUTTON'||tag==='SELECT'||el.getAttribute('role')==='button'||(tag==='A'&&el.getAttribute('href')&&cs.display!=='inline');
+      if(ctl){ var r=el.getBoundingClientRect(); if(r.height>0&&r.height<40){ el.style.setProperty('min-height','44px','important'); if(cs.display==='inline-block'||cs.display==='block'){ el.style.setProperty('display','inline-flex','important'); el.style.setProperty('align-items','center','important'); } } }
+      el.__f=true;
+    }
+  }
+  function run(){ try{ name(); floors(); }catch(e){} }
+  run(); [600,2000,4500].forEach(function(ms){ setTimeout(run, ms); });
+  try{ new MutationObserver(function(){ clearTimeout(window.__immT); window.__immT=setTimeout(run,250); }).observe(document.body||document.documentElement,{childList:true,subtree:true}); }catch(e){}
 })();
 </script>

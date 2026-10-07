@@ -375,7 +375,7 @@ label{display:block;font-size:13px;font-weight:700;color:var(--ink-2);margin-bot
         </div>
       </div>
     </div>
-    <p class="footer">Immanuel Church App · v1.2 · Oct 7, 2026</p>
+    <p class="footer">Immanuel Church App · v1.3 · Oct 7, 2026</p>
   </section>
 
   <nav class="tabbar" aria-label="Main">
@@ -722,3 +722,228 @@ ta.addEventListener('input',function(){ try{ localStorage.setItem(NKEY,JSON.stri
   [300, 1500, 4000, 8000].forEach(function(ms){ setTimeout(go, ms); });
 })();
 </script>
+<!-- ===== Sermon Notes v2 (7 Oct 2026, Daraja Studio) =====
+     Jerry: "sitting in church I wanted to record the sermon… say record and let the phone sit on your lap… then AI:
+     summarize it, bullet points, questions — what did you get out of it, what can I put into my own life — pull out all
+     the scripture… preloaded notes of the screens and Bible verses." One screen: Record · This Sunday · My notes ·
+     After (scriptures, summary, questions) · Library. Everything stays on the phone (IndexedDB). -->
+<style id="sn2-css">
+#sn2{position:fixed;inset:0;z-index:9996;background:var(--bg,#f5f6f2);color:var(--ink,#232620);display:none;flex-direction:column;font-family:inherit}
+#sn2.on{display:flex}
+#sn2 .hd{display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;background:var(--surface,#fff);border-bottom:1px solid var(--line,#dfe3d7)}
+#sn2 .hd b{flex:1;font-size:18px}
+#sn2 .hd button{font:inherit;font-weight:800;min-height:44px;padding:6px 12px;border-radius:999px;border:1px solid var(--line,#dfe3d7);background:var(--surface-2,#eef1e8);color:var(--ink,#232620);cursor:pointer}
+#sn2 .tabs{display:flex;gap:6px;padding:8px 14px;background:var(--surface,#fff);border-bottom:1px solid var(--line,#dfe3d7)}
+#sn2 .tabs button{flex:1;font:inherit;font-weight:800;font-size:15px;min-height:44px;border-radius:12px;border:1px solid var(--line,#dfe3d7);background:transparent;color:var(--ink,#232620);cursor:pointer}
+#sn2 .tabs button[aria-pressed="true"]{background:var(--green,#61b000);border-color:var(--green,#61b000);color:#fff}
+#sn2 .body{flex:1;overflow:auto;padding:14px 14px calc(24px + env(safe-area-inset-bottom));max-width:620px;width:100%;margin:0 auto;box-sizing:border-box}
+#sn2 .card{background:var(--surface,#fff);border:1px solid var(--line,#dfe3d7);border-radius:16px;padding:14px;margin-bottom:12px}
+#sn2 .card h3{margin:0 0 8px;font-size:16px}
+#sn2 .eyebrow{font-size:12px;font-weight:800;letter-spacing:.06em;color:var(--green-deep,#436c06);text-transform:uppercase}
+#sn2 .muted{color:var(--ink-2,#4b4f46);font-size:14px}
+#sn2 .big{width:100%;font:inherit;font-size:19px;font-weight:800;min-height:62px;border:0;border-radius:16px;background:var(--green,#61b000);color:#fff;cursor:pointer}
+#sn2 .big.rec{background:#c8452c}
+#sn2 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#sn2 .btn2{font:inherit;font-weight:800;font-size:15px;min-height:44px;padding:8px 14px;border-radius:12px;border:1px solid var(--line,#dfe3d7);background:var(--surface-2,#eef1e8);color:var(--ink,#232620);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+#sn2 .btn2.g{background:var(--green,#61b000);border-color:var(--green,#61b000);color:#fff}
+#sn2 .live{max-height:150px;overflow:auto;font-size:14px;line-height:1.5;color:var(--ink-2,#4b4f46);background:var(--surface-2,#eef1e8);border-radius:10px;padding:8px 10px;margin-top:10px;white-space:pre-wrap}
+#sn2 .dot{display:inline-block;width:12px;height:12px;border-radius:50%;background:#c8452c;margin-right:6px;animation:sn2p 1.2s infinite}
+@keyframes sn2p{50%{opacity:.25}}
+#sn2 .note{display:flex;gap:8px;align-items:flex-start;padding:8px 0;border-top:1px solid var(--line,#dfe3d7)}
+#sn2 .note:first-child{border-top:0}
+#sn2 .note .t{font-weight:800;color:var(--green-deep,#436c06);min-width:48px;font-size:14px;background:none;border:0;cursor:pointer;text-align:left;padding:0}
+#sn2 textarea,#sn2 input[type=text]{width:100%;box-sizing:border-box;font:inherit;font-size:16px;padding:10px 12px;border:1px solid var(--line,#dfe3d7);border-radius:12px;background:var(--surface,#fff);color:var(--ink,#232620)}
+#sn2 .verse{border-left:3px solid var(--green,#61b000);background:var(--surface-2,#eef1e8);border-radius:0 10px 10px 0;padding:8px 10px;margin:6px 0;font-size:14.5px;line-height:1.5}
+#sn2 .vref{font:inherit;font-weight:800;font-size:14px;padding:7px 11px;border-radius:999px;border:1px solid var(--green,#61b000);background:transparent;color:var(--green-deep,#436c06);cursor:pointer;min-height:40px;margin:3px 4px 3px 0}
+#sn2 .q{margin:10px 0}
+#sn2 .q b{display:block;margin-bottom:4px;font-size:15px}
+#sn2 .lib{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line,#dfe3d7)}
+#sn2 .lib:first-child{border-top:0}
+#sn2 .lib .grow{flex:1}
+#sn2 audio{width:100%;margin-top:8px}
+@media (prefers-color-scheme:dark){ #sn2 .big.rec{background:#e0563c} }
+</style>
+<script id="sn2-js">
+(function(){
+  if(window.__sn2) return; window.__sn2 = true;
+  /* ---------- the message this Sunday (newest in MESSAGES; staff can add outline:[…] and verses:[…] on the Weekly Update page) ---------- */
+  var MSGS = (typeof MESSAGES !== 'undefined' ? MESSAGES.slice() : []).sort(function(a,b){ return String(b.date).localeCompare(String(a.date)); });
+  var CUR = MSGS[0] || { id:'none', title:'This Sunday', series:'', ref:'', who:'', date:new Date().toISOString().slice(0,10) };
+  var V1_SLIDES = { u9XnGO5gWsQ:[["The parable",["A widow who would not quit — and a judge who finally listened (Luke 18:1–8)","Jesus told it “so they would always pray and not give up” (v.1)"]],["Persistent ≠ pestering",["God is not the reluctant judge — the parable argues from lesser to greater","If an unjust judge answers persistence, how much more a loving Father"]],["Why keep praying?",["Persistence changes US — it shapes what we actually want","Delay is not denial","“Will He find faith on the earth?” — the real question is ours (v.8)"]],["This week",["Pick ONE prayer you had quietly given up on","Bring it back every day this week","Tell one person you’re praying — let them ask you about it"]]] };
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function fmtT(s){ s = Math.max(0, Math.round(s || 0)); var h = Math.floor(s/3600), m = Math.floor(s%3600/60), x = s%60; return (h ? h + ':' + String(m).padStart(2,'0') : m) + ':' + String(x).padStart(2,'0'); }
+  function niceDate(d){ try{ return new Date(String(d).slice(0,10) + 'T12:00:00').toLocaleDateString(undefined, {weekday:'short', month:'short', day:'numeric'}); }catch(e){ return d; } }
+  function toast2(t){ try{ if(typeof toast === 'function') return toast(t); }catch(e){} var n=document.createElement('div'); n.textContent=t; n.style.cssText='position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#232620;color:#fff;padding:10px 16px;border-radius:999px;z-index:10000;font-weight:700'; document.body.appendChild(n); setTimeout(function(){ n.remove(); }, 2600); }
+
+  /* ---------- storage: IndexedDB (sessions + audio), small and private ---------- */
+  var DBP = null;
+  function db(){ if(DBP) return DBP; DBP = new Promise(function(res, rej){ var r = indexedDB.open('imm_sermons', 1);
+    r.onupgradeneeded = function(){ var d = r.result; if(!d.objectStoreNames.contains('s')) d.createObjectStore('s', {keyPath:'id'}); if(!d.objectStoreNames.contains('a')) d.createObjectStore('a'); };
+    r.onsuccess = function(){ res(r.result); }; r.onerror = function(){ rej(r.error); }; }); return DBP; }
+  function tx(store, mode, fn){ return db().then(function(d){ return new Promise(function(res, rej){ var t = d.transaction(store, mode), o = t.objectStore(store), out = fn(o); t.oncomplete = function(){ res(out && out.result !== undefined ? out.result : out); }; t.onerror = function(){ rej(t.error); }; }); }); }
+  function putS(s){ s.updated = Date.now(); return tx('s', 'readwrite', function(o){ return o.put(s); }); }
+  function getS(id){ return tx('s', 'readonly', function(o){ return o.get(id); }); }
+  function allS(){ return tx('s', 'readonly', function(o){ return o.getAll(); }); }
+  function delS(id){ return tx('s', 'readwrite', function(o){ o.delete(id); }).then(function(){ return tx('a', 'readwrite', function(o){ o.delete(id); }); }); }
+  function putA(id, blob){ return tx('a', 'readwrite', function(o){ return o.put(blob, id); }); }
+  function getA(id){ return tx('a', 'readonly', function(o){ return o.get(id); }); }
+
+  /* ---------- scripture finder: written ("John 3:16", "1 Cor 13") and spoken ("John chapter three verse sixteen") ---------- */
+  var BOOKS = [['Genesis','Gen'],['Exodus','Exod|Ex'],['Leviticus','Lev'],['Numbers','Num'],['Deuteronomy','Deut'],['Joshua','Josh'],['Judges','Judg'],['Ruth',''],['1 Samuel','1 Sam'],['2 Samuel','2 Sam'],['1 Kings','1 Kgs'],['2 Kings','2 Kgs'],['1 Chronicles','1 Chr'],['2 Chronicles','2 Chr'],['Ezra',''],['Nehemiah','Neh'],['Esther','Esth'],['Job',''],['Psalms','Psalm|Ps'],['Proverbs','Prov'],['Ecclesiastes','Eccl'],['Song of Songs','Song of Solomon'],['Isaiah','Isa'],['Jeremiah','Jer'],['Lamentations','Lam'],['Ezekiel','Ezek'],['Daniel','Dan'],['Hosea','Hos'],['Joel',''],['Amos',''],['Obadiah','Obad'],['Jonah',''],['Micah','Mic'],['Nahum',''],['Habakkuk','Hab'],['Zephaniah','Zeph'],['Haggai','Hag'],['Zechariah','Zech'],['Malachi','Mal'],['Matthew','Matt|Mt'],['Mark','Mk'],['Luke','Lk'],['John','Jn'],['Acts',''],['Romans','Rom'],['1 Corinthians','1 Cor'],['2 Corinthians','2 Cor'],['Galatians','Gal'],['Ephesians','Eph'],['Philippians','Phil'],['Colossians','Col'],['1 Thessalonians','1 Thess'],['2 Thessalonians','2 Thess'],['1 Timothy','1 Tim'],['2 Timothy','2 Tim'],['Titus',''],['Philemon','Phlm'],['Hebrews','Heb'],['James','Jas'],['1 Peter','1 Pet'],['2 Peter','2 Pet'],['1 John',''],['2 John',''],['3 John',''],['Jude',''],['Revelation','Rev']];
+  var NUMW = {one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,eleven:11,twelve:12,thirteen:13,fourteen:14,fifteen:15,sixteen:16,seventeen:17,eighteen:18,nineteen:19,twenty:20,thirty:30,forty:40,fifty:50};
+  function words2num(t){ return String(t).replace(/\b(twenty|thirty|forty|fifty)[ -](one|two|three|four|five|six|seven|eight|nine)\b/gi, function(m, a, b){ return NUMW[a.toLowerCase()] + NUMW[b.toLowerCase()]; }).replace(/\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty)\b/gi, function(m){ return NUMW[m.toLowerCase()]; }).replace(/\b(first|1st)\s+(?=(samuel|kings|chronicles|corinthians|thessalonians|timothy|peter|john))/gi, '1 ').replace(/\b(second|2nd)\s+(?=(samuel|kings|chronicles|corinthians|thessalonians|timothy|peter|john))/gi, '2 ').replace(/\b(third|3rd)\s+(?=john)/gi, '3 '); }
+  function findRefs(text){
+    var t = words2num(text || ''), out = [], seen = {};
+    BOOKS.forEach(function(b){
+      var names = [b[0]].concat(b[1] ? b[1].split('|') : []).map(function(n){ return n.replace(/ /g, '\\s*'); }).join('|');
+      var re = new RegExp('\\b(' + names + ')\\.?\\s+(?:chapter\\s+)?(\\d{1,3})(?:\\s*(?::|,?\\s*verses?\\s+)\\s*(\\d{1,3})(?:\\s*(?:-|–|to|through)\\s*(\\d{1,3}))?)?', 'gi');
+      var m; while((m = re.exec(t))){ var ch = +m[2]; if(ch < 1 || ch > 150) continue; if(b[0] === 'Mark' && !/^Mark$/i.test(m[1]) && !m[3]) continue;
+        if(/^(Job|Mark|Acts|Amos|Joel|Jude|Ruth|Titus)$/i.test(m[1]) && !m[3] && !/chapter/i.test(m[0])) continue;  /* "a job 3 times" — needs a verse or the word chapter */
+        var ref = b[0] + ' ' + ch + (m[3] ? ':' + m[3] + (m[4] ? '–' + m[4] : '') : ''); if(!seen[ref]){ seen[ref] = 1; out.push(ref); } }
+    });
+    return out;
+  }
+  var VCACHE = {};
+  function verseText(ref){ if(VCACHE[ref]) return Promise.resolve(VCACHE[ref]);
+    var q = ref.replace('–', '-'); try{ var c = localStorage.getItem('sn2v:' + q); if(c) return Promise.resolve(VCACHE[ref] = c); }catch(e){}
+    return fetch('https://bible-api.com/' + encodeURIComponent(q) + '?translation=web').then(function(r){ return r.json(); }).then(function(j){ var t = (j.text || '').trim().replace(/\s+\n/g, '\n'); if(!t) throw 0; if(t.length > 2400) t = t.slice(0, 2400) + '…'; VCACHE[ref] = t; try{ localStorage.setItem('sn2v:' + q, t); }catch(e){} return t; });
+  }
+
+  /* ---------- the screen ---------- */
+  var W = document.createElement('div'); W.id = 'sn2'; W.setAttribute('role', 'dialog'); W.setAttribute('aria-label', 'Sermon notes'); document.body.appendChild(W);
+  var S = null, TAB = 'during';              /* the open session */
+  function newSession(){ return { id:'s' + Date.now().toString(36), vid:CUR.id, title:(CUR.series && CUR.series !== 'Standalone' ? CUR.series + ' · ' : '') + (CUR.title || 'Sermon'), ref:CUR.ref || '', who:CUR.who || '', date:new Date().toISOString().slice(0,10), dur:0, words:'', notes:[], summary:'', aiq:'', answers:{}, hasAudio:false, created:Date.now() }; }
+  function migrateV1(s){ try{ var old = JSON.parse(localStorage.getItem('note:' + s.vid) || '""'); if(old && !s.notes.length) s.notes.push({ t:null, text:String(old) }); }catch(e){} }
+  function open(){ W.classList.add('on'); document.body.style.overflow = 'hidden';
+    allS().then(function(list){ var mine = (list || []).filter(function(x){ return x.vid === CUR.id; }).sort(function(a,b){ return b.created - a.created; })[0];
+      S = mine || newSession(); if(!mine) migrateV1(S); TAB = (S.dur || S.words) && !REC ? 'after' : 'during'; draw(); }).catch(function(){ S = newSession(); draw(); }); }
+  function close(){ if(REC){ if(!confirm('Stop recording and close?')) return; stopRec(); } W.classList.remove('on'); document.body.style.overflow = ''; try{ if(PLAYER) PLAYER.pause(); }catch(e){} }
+  window.openSermonNotes = open;
+  var ob = document.getElementById('sermonNotesBtn'); if(ob) ob.onclick = open;
+
+  function header(){ return '<div class="hd"><b>📝 Sermon Notes</b><button type="button" data-a="lib">📚 Library</button><button type="button" data-a="x" aria-label="Close">✕</button></div>'
+    + '<div class="tabs"><button type="button" data-tab="during" aria-pressed="' + (TAB === 'during') + '">🎙 During</button><button type="button" data-tab="after" aria-pressed="' + (TAB === 'after') + '">✨ After</button></div>'; }
+  function msgCard(){ var slides = (CUR.outline && CUR.outline.length) ? CUR.outline : (V1_SLIDES[CUR.id] || null), verses = [].concat(CUR.ref ? [CUR.ref] : [], CUR.verses || []);
+    return '<div class="card"><div class="eyebrow">' + esc(S.vid === CUR.id ? 'This Sunday' : 'Sermon') + (CUR.series && CUR.series !== 'Standalone' ? ' · ' + esc(CUR.series) : '') + '</div>'
+      + '<h3 style="font-size:20px;margin:4px 0 2px">' + esc(S.title) + '</h3><div class="muted">' + [S.ref, S.who, niceDate(S.date)].filter(Boolean).map(esc).join(' · ') + '</div>'
+      + (slides ? slides.map(function(sl){ var h = Array.isArray(sl) ? sl[0] : sl.h, pts = Array.isArray(sl) ? sl[1] : (sl.pts || []); return '<div class="verse"><b>' + esc(h) + '</b><ul style="margin:6px 0 0;padding-left:18px">' + pts.map(function(p){ return '<li>' + esc(p) + '</li>'; }).join('') + '</ul></div>'; }).join('') : '')
+      + (verses.length ? '<div style="margin-top:8px"><div class="muted" style="margin-bottom:4px">Bible verses — tap to read:</div>' + verses.map(function(v){ return '<button type="button" class="vref" data-v="' + esc(v) + '">📖 ' + esc(v) + '</button>'; }).join('') + '<div data-vout></div></div>' : '')
+      + '</div>'; }
+  function notesCard(){ return '<div class="card"><h3>✍️ My notes</h3><div class="row" style="flex-wrap:nowrap"><input type="text" id="sn2In" placeholder="What stood out… (stays on your phone)" aria-label="Add a note"><button type="button" class="btn2 g" data-a="add">Add</button></div>'
+      + (REC ? '<div class="muted" style="margin-top:6px">Each note is stamped with its moment in the recording — tap the time later to hear that part.</div>' : '')
+      + '<div style="margin-top:8px">' + (S.notes.length ? S.notes.map(function(n, i){ return '<div class="note"><button type="button" class="t" data-play="' + (n.t == null ? '' : n.t) + '" aria-label="Play from here">' + (n.t == null ? '•' : '▶ ' + fmtT(n.t)) + '</button><div style="flex:1">' + esc(n.text) + '</div><button type="button" class="btn2" style="min-height:36px;padding:4px 10px" data-del="' + i + '" aria-label="Remove note">✕</button></div>'; }).join('') : '<div class="muted">No notes yet.</div>') + '</div></div>'; }
+  function recCard(){ if(REC) return '<div class="card"><div class="row" style="justify-content:space-between"><b><span class="dot"></span>Recording · <span id="sn2T">' + fmtT(elapsed()) + '</span></b><span class="muted">Keep the screen on — it dims by itself</span></div>'
+      + '<div class="row" style="margin-top:10px"><button type="button" class="big rec" data-a="stop" style="flex:1">⏹ Stop — the sermon is over</button></div>'
+      + '<div class="live" id="sn2Live" aria-live="polite">' + (S.words ? esc(S.words.slice(-1200)) : (SR_OK ? 'The words will appear here as they are said…' : 'Recording the sound. (Writing the words live isn’t available on this phone — the recording is safe.)')) + '</div></div>';
+    return '<div class="card"><button type="button" class="big" data-a="rec">🎙 ' + (S.hasAudio ? 'Record more' : 'Record the sermon') + '</button>'
+      + '<div class="muted" style="margin-top:8px">Tap it, then set the phone on your lap. Keep the screen on (it dims itself). Everything stays on your phone.' + (S.hasAudio ? ' Recorded so far: ' + fmtT(S.dur) + '.' : '') + '</div></div>'; }
+  function drawDuring(){ return recCard() + msgCard() + notesCard(); }
+
+  /* ---------- After: listen · scriptures · summary · questions · share ---------- */
+  var QS = ['What is one thing you got out of this sermon?', 'What is one thing you could put into your own life this week?', 'Where did this message challenge you, or make you uncomfortable?', 'What did it show you about God?', 'Who could you share this with — and what would you tell them?', 'What do you want to pray about because of it?'];
+  function aiPrompt(kind){ var body = (S.words || '').trim(); var notes = S.notes.map(function(n){ return '- ' + n.text; }).join('\n');
+    var head = 'Here is a sermon' + (S.title ? ' (“' + S.title + '”' + (S.ref ? ', ' + S.ref : '') + (S.who ? ', ' + S.who : '') + ')' : '') + '.';
+    var ask = kind === 'sum' ? 'Please give me: 1) a three-sentence summary, 2) the main points as short bullet points, 3) every Bible passage mentioned. Plain, warm words.'
+                             : 'Please write 8 discussion questions about this sermon for a small group or a family: a few about understanding it, a few about applying it this week, and one about prayer. Number them. Plain words.';
+    return head + ' ' + ask + '\n\n' + (body ? 'SERMON (written down as it was spoken):\n' + body.slice(0, 24000) : '(The words were not written down — here are my notes.)') + (notes ? '\n\nMY NOTES:\n' + notes : ''); }
+  function aiBox(kind, saved){ var label = kind === 'sum' ? '✨ Summary & bullet points' : '💬 More questions from AI';
+    return '<div class="card"><h3>' + label + '</h3>' + (saved ? '<div style="white-space:pre-wrap;font-size:15px;line-height:1.55">' + esc(saved) + '</div><div class="row" style="margin-top:8px"><button type="button" class="btn2" data-redo="' + kind + '">Do it again</button></div>'
+      : '<div class="muted">Two taps with your own AI app (free): we copy the sermon for you, you paste it there, then paste the answer back here.</div>'
+        + '<div class="row" style="margin-top:8px"><button type="button" class="btn2 g" data-ai="' + kind + '">1 · Copy the sermon</button><a class="btn2" href="https://chatgpt.com/" target="_blank" rel="noopener">2 · Open ChatGPT</a><a class="btn2" href="https://claude.ai/new" target="_blank" rel="noopener">or Claude</a></div>'
+        + '<textarea id="sn2P_' + kind + '" rows="4" placeholder="3 · Paste the answer here" style="margin-top:8px"></textarea><div class="row" style="margin-top:6px"><button type="button" class="btn2 g" data-save="' + kind + '">Save it</button></div>') + '</div>'; }
+  function drawAfter(){
+    var refs = findRefs([S.ref, S.words, S.notes.map(function(n){ return n.text; }).join(' '), (CUR.verses || []).join(' ')].join(' '));
+    var h = '<div class="card"><div class="eyebrow">' + esc(niceDate(S.date)) + (S.dur ? ' · ' + fmtT(S.dur) : '') + '</div><h3 style="font-size:20px;margin:4px 0">' + esc(S.title) + '</h3>'
+      + (S.hasAudio ? '<audio id="sn2Audio" controls preload="metadata"></audio>' : '<div class="muted">No recording for this one — the notes and questions still work.</div>') + '</div>';
+    h += '<div class="card"><h3>📜 Scriptures in this sermon</h3>' + (refs.length ? refs.map(function(r){ return '<button type="button" class="vref" data-v="' + esc(r) + '">📖 ' + esc(r) + '</button>'; }).join('') + '<div data-vout></div><div class="muted" style="margin-top:6px">Found in the words, your notes and this Sunday’s verses. Text: World English Bible (free to share).</div>' : '<div class="muted">None found yet. They appear here when the words or your notes mention one, e.g. “John 3:16”.</div>') + '</div>';
+    h += aiBox('sum', S.summary);
+    h += '<div class="card"><h3>💬 Questions to take home</h3>' + QS.map(function(q, i){ return '<div class="q"><b>' + (i+1) + '. ' + esc(q) + '</b><textarea rows="2" data-ans="' + i + '" placeholder="Your answer (optional)">' + esc((S.answers || {})[i] || '') + '</textarea></div>'; }).join('')
+      + refs.slice(0, 2).map(function(r, j){ var i = 'r' + j; return '<div class="q"><b>' + (QS.length + j + 1) + '. Read ' + esc(r) + '. What does it say to you today?</b><textarea rows="2" data-ans="' + i + '" placeholder="Your answer (optional)">' + esc((S.answers || {})[i] || '') + '</textarea></div>'; }).join('') + '</div>';
+    h += aiBox('q', S.aiq);
+    h += notesCard();
+    h += '<div class="card"><h3>📤 Share</h3><div class="muted">Send the summary, questions and scriptures to your small group or family.</div><div class="row" style="margin-top:8px"><button type="button" class="btn2 g" data-a="share">Share this sermon</button></div></div>';
+    return h; }
+  function shareText(){ var refs = findRefs([S.ref, S.words, S.notes.map(function(n){ return n.text; }).join(' ')].join(' '));
+    return '📝 ' + S.title + (S.ref ? ' (' + S.ref + ')' : '') + ' — ' + niceDate(S.date) + '\n\n' + (S.summary ? S.summary + '\n\n' : '') + (refs.length ? '📜 ' + refs.join(' · ') + '\n\n' : '') + '💬 Questions:\n' + QS.map(function(q, i){ return (i+1) + '. ' + q; }).join('\n') + (S.aiq ? '\n\n' + S.aiq : '') + '\n\n— from the Immanuel app'; }
+
+  function drawLib(){ allS().then(function(list){ list = (list || []).sort(function(a,b){ return b.created - a.created; });
+    W.innerHTML = '<div class="hd"><b>📚 My sermons</b><button type="button" data-a="back">‹ Back</button><button type="button" data-a="x" aria-label="Close">✕</button></div><div class="body">'
+      + '<div class="card">' + (list.length ? list.map(function(s){ return '<div class="lib"><div class="grow"><b>' + esc(s.title) + '</b><div class="muted">' + esc(niceDate(s.date)) + (s.dur ? ' · ' + fmtT(s.dur) : '') + (s.notes && s.notes.length ? ' · ' + s.notes.length + ' notes' : '') + (s.summary ? ' · ✨' : '') + '</div></div><button type="button" class="btn2 g" data-openS="' + s.id + '">Open</button><button type="button" class="btn2" data-delS="' + s.id + '" aria-label="Delete">🗑</button></div>'; }).join('') : '<div class="muted">No sermons saved yet. Record one on Sunday — it lands here.</div>') + '</div></div>';
+  }); }
+
+  var PLAYER = null;
+  function draw(){ W.innerHTML = header() + '<div class="body">' + (TAB === 'during' ? drawDuring() : drawAfter()) + '</div>';
+    if(TAB === 'after' && S.hasAudio){ var a = W.querySelector('#sn2Audio'); PLAYER = a; getA(S.id).then(function(b){ if(b && a){ a.src = URL.createObjectURL(b); } }); } }
+  function save(){ return putS(S).catch(function(){}); }
+
+  /* ---------- clicks ---------- */
+  W.addEventListener('click', function(e){
+    var el = e.target.closest('button,a'); if(!el || !W.contains(el)) return;
+    var a = el.getAttribute('data-a');
+    if(a === 'x') return close();
+    if(a === 'lib') return drawLib();
+    if(a === 'back') return draw();
+    if(el.hasAttribute('data-tab')){ TAB = el.getAttribute('data-tab'); return draw(); }
+    if(a === 'rec') return startRec();
+    if(a === 'stop'){ stopRec(); return; }
+    if(a === 'add'){ var inp = W.querySelector('#sn2In'), v = (inp.value || '').trim(); if(!v){ inp.focus(); return; } S.notes.push({ t:REC ? Math.round(elapsed()) : null, text:v }); inp.value = ''; save(); var keep = REC; draw(); if(keep) setTimeout(function(){ var i2 = W.querySelector('#sn2In'); if(i2) i2.focus(); }, 50); return; }
+    if(el.hasAttribute('data-del')){ S.notes.splice(+el.getAttribute('data-del'), 1); save(); return draw(); }
+    if(el.hasAttribute('data-play')){ var t = el.getAttribute('data-play'); if(t === '') return; if(REC){ toast2('You can listen after the sermon'); return; } if(TAB !== 'after'){ TAB = 'after'; draw(); } setTimeout(function(){ var p = W.querySelector('#sn2Audio'); if(p){ var go = function(){ try{ p.currentTime = +t; p.play(); }catch(x){} }; if(p.readyState >= 1) go(); else p.addEventListener('loadedmetadata', go, {once:true}); p.scrollIntoView({block:'center'}); } }, 300); return; }
+    if(el.hasAttribute('data-v')){ var ref = el.getAttribute('data-v'), out = el.parentElement.querySelector('[data-vout]') || el.closest('.card').querySelector('[data-vout]'); if(!out) return; out.innerHTML = '<div class="verse">Opening ' + esc(ref) + '…</div>';
+      verseText(ref).then(function(t){ out.innerHTML = '<div class="verse"><b>' + esc(ref) + '</b><div style="white-space:pre-wrap;margin-top:4px">' + esc(t) + '</div></div>'; }).catch(function(){ out.innerHTML = '<div class="verse"><b>' + esc(ref) + '</b> — couldn’t open it just now (no signal?). <a href="https://www.biblegateway.com/passage/?search=' + encodeURIComponent(ref) + '" target="_blank" rel="noopener">Read it on Bible Gateway ↗</a></div>'; }); return; }
+    if(el.hasAttribute('data-ai')){ var k = el.getAttribute('data-ai'), txt = aiPrompt(k); var done = function(){ el.textContent = '✓ Copied — now open ChatGPT or Claude and paste'; };
+      if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, function(){ fallbackCopy(txt); done(); }); else { fallbackCopy(txt); done(); } return; }
+    if(el.hasAttribute('data-save')){ var k2 = el.getAttribute('data-save'), ta = W.querySelector('#sn2P_' + k2), v2 = (ta && ta.value || '').trim(); if(!v2){ ta && ta.focus(); return; } if(k2 === 'sum') S.summary = v2; else S.aiq = v2; save(); toast2('Saved'); return draw(); }
+    if(el.hasAttribute('data-redo')){ if(el.getAttribute('data-redo') === 'sum') S.summary = ''; else S.aiq = ''; save(); return draw(); }
+    if(a === 'share'){ var st = shareText(); if(navigator.share){ navigator.share({ title:S.title, text:st }).catch(function(){}); } else { fallbackCopy(st); toast2('Copied — paste it into a text or email'); } return; }
+    if(el.hasAttribute('data-opens')){ getS(el.getAttribute('data-opens')).then(function(s){ if(s){ S = s; TAB = 'after'; draw(); } }); return; }
+    if(el.hasAttribute('data-dels')){ if(!confirm('Delete this sermon, its recording and notes from your phone?')) return; delS(el.getAttribute('data-dels')).then(drawLib); return; }
+  });
+  W.addEventListener('input', function(e){ var t = e.target; if(t.hasAttribute && t.hasAttribute('data-ans')){ S.answers = S.answers || {}; S.answers[t.getAttribute('data-ans')] = t.value; clearTimeout(W.__t); W.__t = setTimeout(save, 400); } });
+  W.addEventListener('keydown', function(e){ if(e.target && e.target.id === 'sn2In' && e.key === 'Enter'){ e.preventDefault(); var b = W.querySelector('[data-a="add"]'); if(b) b.click(); } });
+  function fallbackCopy(t){ var ta = document.createElement('textarea'); ta.value = t; ta.style.cssText = 'position:fixed;top:-1000px'; document.body.appendChild(ta); ta.select(); try{ document.execCommand('copy'); }catch(e){} ta.remove(); }
+
+  /* ---------- recording: the phone on your lap ---------- */
+  var REC = null, CHUNKS = [], T0 = 0, BASE = 0, WAKE = null, SR = null, SR_OK = !!(window.SpeechRecognition || window.webkitSpeechRecognition), tick = null, saveT = null;
+  function elapsed(){ return REC ? BASE + (Date.now() - T0) / 1000 : S.dur; }
+  function pickType(){ var c = ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm', 'audio/aac']; if(!window.MediaRecorder || !MediaRecorder.isTypeSupported) return ''; for(var i = 0; i < c.length; i++) if(MediaRecorder.isTypeSupported(c[i])) return c[i]; return ''; }
+  function startRec(){
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder){ alert('This phone’s browser can’t record here. Notes and questions still work. (On an iPhone, use Safari with iOS 15 or newer.)'); return; }
+    navigator.mediaDevices.getUserMedia({ audio:{ echoCancellation:false, noiseSuppression:true, autoGainControl:true } }).then(function(stream){
+      var type = pickType(), prev = null;
+      var begin = function(prevBlob){ CHUNKS = prevBlob ? [prevBlob] : [];
+        try{ REC = new MediaRecorder(stream, type ? { mimeType:type, audioBitsPerSecond:32000 } : undefined); }catch(e){ REC = new MediaRecorder(stream); }
+        REC.ondataavailable = function(ev){ if(ev.data && ev.data.size) CHUNKS.push(ev.data); };
+        REC.onstop = function(){ stream.getTracks().forEach(function(t){ t.stop(); }); finishSave(); };
+        BASE = 0; T0 = Date.now(); REC.start(10000);              /* a piece every 10 s, saved every 30 s — a dropped call or a dead battery keeps what was recorded */
+        wakeOn(); words(); tick = setInterval(function(){ var e = W.querySelector('#sn2T'); if(e) e.textContent = fmtT(elapsed()); }, 1000);
+        saveT = setInterval(partialSave, 30000); TAB = 'during'; draw(); toast2('Recording — set the phone on your lap'); };
+      /* two sound files can't be glued together, so "Record more" starts part 2 — it sits next to part 1 in the Library */
+      if(S.hasAudio){ var p2 = newSession(); p2.title = S.title.replace(/ \(part \d+\)$/, '') + ' (part 2)'; p2.vid = S.vid; S = p2; }
+      begin(null);
+    }).catch(function(){ alert('The microphone was not allowed. On an iPhone: Settings → Safari → Microphone → Allow, then try again.'); });
+  }
+  function partialSave(){ if(!REC || !CHUNKS.length) return; var b = new Blob(CHUNKS, { type:REC.mimeType || 'audio/mp4' }); S.dur = Math.round(elapsed()); S.hasAudio = true; putA(S.id, b).catch(function(){}); save(); }
+  function finishSave(){ var b = new Blob(CHUNKS, { type:(REC && REC.mimeType) || 'audio/mp4' }); REC = null; clearInterval(tick); clearInterval(saveT); wakeOff(); wordsOff();
+    putA(S.id, b).then(function(){ S.hasAudio = true; return save(); }).then(function(){ TAB = 'after'; draw(); toast2('Saved — ' + fmtT(S.dur) + ' recorded'); }).catch(function(){ alert('The recording could not be saved — this phone may be out of space.'); }); }
+  function stopRec(){ if(!REC) return; S.dur = Math.round(elapsed()); try{ REC.requestData(); }catch(e){} try{ REC.stop(); }catch(e){ finishSave(); } }
+  function wakeOn(){ try{ if(navigator.wakeLock) navigator.wakeLock.request('screen').then(function(w){ WAKE = w; }).catch(function(){}); }catch(e){} }
+  function wakeOff(){ try{ WAKE && WAKE.release(); }catch(e){} WAKE = null; }
+  document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'visible' && REC && !WAKE) wakeOn(); if(document.visibilityState === 'hidden' && REC) partialSave(); });
+  /* the words, as they're said — Safari stops listening every minute or so, so it restarts itself */
+  function words(){ if(!SR_OK) return; var C = window.SpeechRecognition || window.webkitSpeechRecognition, fails = 0;
+    var go = function(){ if(!REC) return; try{ SR = new C(); }catch(e){ SR_OK = false; return; } SR.continuous = true; SR.interimResults = true; SR.lang = 'en-US';
+      SR.onresult = function(ev){ var fin = '', tmp = ''; for(var i = ev.resultIndex; i < ev.results.length; i++){ if(ev.results[i].isFinal) fin += ev.results[i][0].transcript + ' '; else tmp += ev.results[i][0].transcript; }
+        if(fin){ S.words = (S.words + ' ' + fin).replace(/\s+/g, ' ').trim(); fails = 0; } var box = W.querySelector('#sn2Live'); if(box){ box.textContent = (S.words.slice(-1100) + (tmp ? ' ' + tmp : '')).trim() || 'Listening…'; box.scrollTop = box.scrollHeight; } };
+      SR.onerror = function(ev){ if(ev && (ev.error === 'not-allowed' || ev.error === 'service-not-allowed' || ev.error === 'audio-capture')){ if(++fails > 2){ SR_OK = false; var box = W.querySelector('#sn2Live'); if(box && !S.words) box.textContent = 'Recording the sound. (Writing the words live isn’t available on this phone — the recording is safe.)'; } } };
+      SR.onend = function(){ if(REC && SR_OK) setTimeout(go, 250); };
+      try{ SR.start(); }catch(e){} };
+    go(); }
+  function wordsOff(){ try{ SR && SR.stop(); }catch(e){} SR = null; }
+
+  /* the round 📝 shows during services; on other days it's in the Discussion guide card, and ?notes=1 always shows it */
+  try{ if(ob){ var n = new Date(); if(n.getDay() === 0 && n.getHours() >= 7 && n.getHours() < 13) ob.style.display = ''; } }catch(e){}
+  if(/[?&]notes=1/.test(location.search)) setTimeout(open, 600);
+})();
+</script>
+

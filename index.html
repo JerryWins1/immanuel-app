@@ -13,7 +13,7 @@
   --green:#61b000; --green-deep:#436c06; --green-tint:#e7f0da;
   --ink:#232620; --ink-2:#4b4f46; --ink-3:#7c8175;
   --bg:#f5f6f2; --surface:#ffffff; --surface-2:#eef1e8; --line:#dfe3d7;
-  --on-green:#ffffff; --danger:#c8452c;
+  --on-green:#ffffff; --danger:#c8452c; --btn-green:#3F7A00;
   --shadow:0 1px 2px rgba(35,38,32,.06),0 8px 24px rgba(35,38,32,.07);
   --r:16px; --r-sm:10px; --logo-filter:none;
   --font-display:"Avenir Next","Helvetica Neue",Helvetica,Arial,sans-serif;
@@ -24,7 +24,7 @@
     --green:#7fd11a; --green-deep:#b6ef5a; --green-tint:#243218;
     --ink:#eef1e8; --ink-2:#c3c9b8; --ink-3:#8b9282;
     --bg:#131510; --surface:#1c1f18; --surface-2:#242820; --line:#30352a;
-    --on-green:#0e1408; --danger:#ff7a5c;
+    --on-green:#0e1408; --danger:#ff7a5c; --btn-green:#7fd11a;
     --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35); --logo-filter:invert(1) hue-rotate(180deg) saturate(1.3);
   }
 }
@@ -32,7 +32,7 @@
   --green:#7fd11a; --green-deep:#b6ef5a; --green-tint:#243218;
   --ink:#eef1e8; --ink-2:#c3c9b8; --ink-3:#8b9282;
   --bg:#131510; --surface:#1c1f18; --surface-2:#242820; --line:#30352a;
-  --on-green:#0e1408; --danger:#ff7a5c;
+  --on-green:#0e1408; --danger:#ff7a5c; --btn-green:#7fd11a;
   --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35); --logo-filter:invert(1) hue-rotate(180deg) saturate(1.3);
 }
 *{box-sizing:border-box}
@@ -70,7 +70,7 @@ p{margin:0}
 .pad{padding:16px}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:15px;padding:12px 18px;border-radius:999px;text-decoration:none;transition:transform .08s ease}
 .btn:active{transform:scale(.97)}
-.btn-primary{background:var(--green);color:var(--on-green)}
+.btn-primary{background:var(--btn-green,#3F7A00);color:var(--on-green)}  /* 7 Oct deep check: 4.5:1+ */
 .btn-ghost{background:var(--surface-2);color:var(--ink)}
 .btn-block{width:100%}
 .stack{display:flex;flex-direction:column;gap:10px}
@@ -256,7 +256,7 @@ label{display:block;font-size:13px;font-weight:700;color:var(--ink-2);margin-bot
       <button id="install-x" aria-label="Dismiss">Got it</button>
     </div>
 
-    <p class="footer">Immanuel Church · 2300 N. Dilleys Rd., Gurnee, IL 60031<br><a href="tel:8473364800">847-336-4800</a> · <a href="https://immanuelhome.org" target="_blank" rel="noopener">immanuelhome.org</a><br><span style="opacity:.7">Immanuel Church App <b>v1.2</b> · 2026-10-07 · Daraja Studio</span></p>
+    <p class="footer">Immanuel Church · 2300 N. Dilleys Rd., Gurnee, IL 60031<br><a href="tel:8473364800">847-336-4800</a> · <a href="https://immanuelhome.org" target="_blank" rel="noopener">immanuelhome.org</a><br><span style="opacity:.7">Immanuel Church App <b>v1.4</b> · 2026-10-07 · Daraja Studio</span></p>
   </main>
 
   <!-- WATCH -->
@@ -286,7 +286,7 @@ label{display:block;font-size:13px;font-weight:700;color:var(--ink-2);margin-bot
   <section id="prayer" class="screen">
     <div class="eyebrow">Prayer wall</div>
     <h1 style="font-size:28px">Let's pray together</h1>
-    <p class="muted" style="margin:6px 0 16px">Tap “I prayed” to let someone know they're not alone. Requests you add here are saved on this phone; the prayer team receives them by email.</p>
+    <p class="muted" style="margin:6px 0 16px">Share a request below and it goes to the prayer team by email. Requests you keep here stay on this phone only. “I prayed” is a private reminder for you — it doesn't notify anyone.</p>
     <div class="card prayer" id="prayer-list"></div>
 
     <div class="section">
@@ -295,9 +295,15 @@ label{display:block;font-size:13px;font-weight:700;color:var(--ink-2);margin-bot
         <div class="field"><label for="p-name">Your first name (optional)</label><input id="p-name" placeholder="Anonymous"></div>
         <div class="field"><label for="p-text">How can we pray for you?</label><textarea id="p-text" placeholder="Share as much or as little as you'd like."></textarea></div>
         <div class="field row" style="justify-content:space-between">
-          <label style="margin:0;display:flex;gap:8px;align-items:center;font-weight:600"><input type="checkbox" id="p-public" checked style="width:auto"> Show on the wall</label>
+          <label style="margin:0;display:flex;gap:8px;align-items:center;font-weight:600"><input type="checkbox" id="p-public" checked style="width:auto"> Keep it on my prayer list (this phone only)</label>
         </div>
         <button class="btn btn-primary btn-block" id="p-submit" style="margin-top:12px">Send to the prayer team</button>
+        <div id="p-after" hidden style="margin-top:12px;padding:12px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line)"><!-- 7 Oct deep check: nothing is cleared until it went -->
+          <p style="margin:0 0 8px;font-weight:700">Did your email open and send?</p>
+          <div class="stack"><button class="btn btn-primary btn-block" id="p-sent">Yes, it's sent — clear the boxes</button>
+          <button class="btn btn-ghost btn-block" id="p-copy">No email? Copy my request</button>
+          <a class="btn btn-ghost btn-block" href="tel:8473364800">Call the office · 847-336-4800</a></div>
+        </div>
         <p class="muted" style="margin-top:8px">Sending opens an email to the church office. Or call <a href="tel:8473364800">847-336-4800</a>.</p>
       </div>
     </div>
@@ -375,7 +381,7 @@ label{display:block;font-size:13px;font-weight:700;color:var(--ink-2);margin-bot
         </div>
       </div>
     </div>
-    <p class="footer">Immanuel Church App · v1.3 · Oct 7, 2026</p>
+    <p class="footer">Immanuel Church App · v1.4 · 2026-10-07</p>
   </section>
 
   <nav class="tabbar" aria-label="Main">
@@ -457,11 +463,7 @@ const TEAM = [
  ["Jurrell Belonga","Leadership Pastor"],["Kyle Dwyer","Pastor of Teaching & Theology"],["Bryan Bicket","Adult Discipleship Pastor"],["Joanna Elrod","Exec. Director, Ministry Operations"],["Angel Roman","Teaching team"],["Joe Boerman","Teaching team"],["Dave Hunsberger","Technical Director"],["Jay Jenison","Creative Director"]
 ];
 
-const SEED_PRAYERS = [
- {who:"Sarah",text:"For my dad's surgery on Thursday — steady hands and a quick recovery.",n:14,ts:Date.now()-2*864e5},
- {who:"Anonymous",text:"Starting a new job Monday. Praying for peace and for good relationships with the team.",n:9,ts:Date.now()-3*864e5},
- {who:"The Recovery Course",text:"For everyone walking through the 12 steps this fall — courage for the next step.",n:31,ts:Date.now()-5*864e5},
-];
+const SEED_PRAYERS = [];   /* 7 Oct deep check: the three made-up requests are gone — this is a real church's app; the list shows only requests saved on this phone */
 
 const $ = s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const fmt = d=>new Date(d+"T12:00:00").toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
@@ -476,7 +478,7 @@ function go(tab){
   history.replaceState(null,"","#"+tab);
 }
 document.addEventListener("click",e=>{
-  const t=e.target.closest("[data-tab]"); if(t){go(t.dataset.tab);return;}
+  const t=e.target.closest("[data-tab]"); if(t&&!t.closest("#sn2")&&document.getElementById(t.dataset.tab)){go(t.dataset.tab);return;}  /* 7 Oct deep check: only real screens */
   const o=e.target.closest("[data-open]"); if(o){openMessage(o.dataset.open);}
 });
 if(location.hash&&$(location.hash+".screen")) go(location.hash.slice(1));
@@ -529,7 +531,10 @@ function openMessage(id){
       <div class="saved" id="note-saved">${note?"Saved":""}</div>
     </div>`;
   $("#sheet").classList.add("open"); document.body.style.overflow="hidden"; window.scrollTo(0,0);
-  let t; $("#note").addEventListener("input",e=>{clearTimeout(t);$("#note-saved").textContent="Saving…";t=setTimeout(()=>{store.set("note:"+id,e.target.value);$("#note-saved").textContent="Saved "+new Date().toLocaleTimeString([], {hour:"numeric",minute:"2-digit"});},500)});
+  /* 7 Oct deep check: the same notes as 📝 Sermon Notes — one store for both */
+  const snMeta={title:(m.series&&m.series!=="Standalone"?m.series+" · ":"")+m.title,ref:m.ref||"",who:m.who||"",date:m.date};
+  if(window.__snNotes) window.__snNotes.get(id).then(txt=>{const ta=$("#note"); if(txt!=null&&ta&&!ta.__typed&&ta.value!==txt){ta.value=txt;$("#note-saved").textContent=txt?"Saved":"";}}).catch(()=>{});
+  let t; $("#note").addEventListener("input",e=>{e.target.__typed=true;clearTimeout(t);$("#note-saved").textContent="Saving…";t=setTimeout(()=>{store.set("note:"+id,e.target.value);if(window.__snNotes)window.__snNotes.set(id,e.target.value,snMeta);$("#note-saved").textContent="Saved "+new Date().toLocaleTimeString([], {hour:"numeric",minute:"2-digit"});},500)});
   $("#share-btn").addEventListener("click",async()=>{
     const data={title:`Immanuel Church — ${m.title}`,text:`${m.title} · ${m.who}`,url:YT(id)};
     if(navigator.share){try{await navigator.share(data)}catch{}}
@@ -552,7 +557,11 @@ function renderHome(){
 }
 /* events */
 const todayISO=(()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");})();
-const UPCOMING=EVENTS.filter(e=>e.d>=todayISO).sort((a,b)=>a.d.localeCompare(b.d));   /* past events never show (v1.2) */
+/* 7 Oct deep check: a same-day event drops off after its listed end time ("7–8:30 PM" → 8:30 PM; one time only → +90 min; unreadable → 11 PM) */
+function evOver(e){ if(e.d!==todayISO) return false; const now=new Date(), mins=now.getHours()*60+now.getMinutes();
+  const tm=[...String(e.t).matchAll(/(\d{1,2})(?::(\d\d))?\s*(AM|PM)/gi)]; if(!tm.length) return mins>=23*60;
+  const last=tm[tm.length-1]; let h=+last[1]%12+(/pm/i.test(last[3])?12:0), end=h*60+(+last[2]||0); if(!/[–-]\s*\d{1,2}(?::\d\d)?\s*(AM|PM)/i.test(e.t)) end+=90; return mins>=end; }
+const UPCOMING=EVENTS.filter(e=>e.d>=todayISO&&!evOver(e)).sort((a,b)=>a.d.localeCompare(b.d));   /* past events never show (v1.2) */
 MESSAGES.sort((a,b)=>b.date.localeCompare(a.date));                                   /* newest first, whatever order they were added */
 const cats=["All",...new Set(UPCOMING.map(e=>e.cat))]; let catFilter="All";
 function eventItem(e){
@@ -581,9 +590,9 @@ function renderPrayers(){
     const key=p.ts+"";const on=!!prayed[key];const n=p.n+(on?1:0);
     return `<div class="item"><div class="who">${p.who||"Anonymous"} <span class="muted" style="font-weight:400">· ${new Date(p.ts).toLocaleDateString(undefined,{month:"short",day:"numeric"})}</span></div>
       <div class="req">${p.text.replace(/</g,"&lt;")}</div>
-      <div class="foot"><span class="muted">${n} ${n===1?"person has":"people have"} prayed</span>
+      <div class="foot"><span class="muted">${on?"You prayed for this ✓":"On this phone only"}</span>
       <button class="praybtn ${on?"on":""}" data-pray="${key}"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.6-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.4-7 10-7 10z"/></svg>${on?"Prayed":"I prayed"}</button></div></div>`;
-  }).join("");
+  }).join("")||`<div class="item"><div class="req">Your prayer list is empty. Requests you share below (with “Keep it on my prayer list” ticked) appear here, on this phone only, so you can keep praying for them.</div></div>`;
 }
 $("#prayer-list").addEventListener("click",e=>{
   const b=e.target.closest("[data-pray]"); if(!b) return;
@@ -592,11 +601,14 @@ $("#prayer-list").addEventListener("click",e=>{
 });
 $("#p-submit").addEventListener("click",()=>{
   const who=$("#p-name").value.trim(), text=$("#p-text").value.trim(); if(!text){toast("Add a request first");$("#p-text").focus();return;}
-  if($("#p-public").checked){const mine=store.get("prayers",[]);mine.unshift({who,text,n:0,ts:Date.now()});store.set("prayers",mine);renderPrayers();}
+  if($("#p-public").checked){const mine=store.get("prayers",[]);if(!(mine[0]&&mine[0].text===text)){mine.unshift({who,text,n:0,ts:Date.now()});store.set("prayers",mine);renderPrayers();}}
   const body=encodeURIComponent(`Prayer request from ${who||"Anonymous"} (via the Immanuel app):\n\n${text}`);
   location.href=`mailto:info@immanuelhome.org?subject=${encodeURIComponent("Prayer request")}&body=${body}`;
-  $("#p-text").value="";$("#p-name").value=""; toast("Opening your email…");
+  $("#p-after").hidden=false; toast("Opening your email…");   /* 7 Oct deep check: the words stay until "Yes, it's sent" */
 });
+$("#p-sent").addEventListener("click",()=>{$("#p-text").value="";$("#p-name").value="";$("#p-after").hidden=true;toast("Thank you — the prayer team will pray");});
+$("#p-copy").addEventListener("click",async()=>{const who=$("#p-name").value.trim(),text=$("#p-text").value.trim(); const msg=`Prayer request from ${who||"Anonymous"}:\n\n${text}`;
+  try{await navigator.clipboard.writeText(msg);toast("Copied — paste it into a text to the church");}catch{const ta=$("#p-text");ta.focus();ta.select();toast("Select and copy the words above");}});
 
 /* team */
 $("#team").innerHTML=TEAM.map(([n,r])=>`<div class="person"><div class="av">${n.split(" ").map(x=>x[0]).join("")}</div><div class="n">${n}</div><div class="r">${r}</div></div>`).join("");
@@ -735,17 +747,17 @@ ta.addEventListener('input',function(){ try{ localStorage.setItem(NKEY,JSON.stri
 #sn2 .hd button{font:inherit;font-weight:800;min-height:44px;padding:6px 12px;border-radius:999px;border:1px solid var(--line,#dfe3d7);background:var(--surface-2,#eef1e8);color:var(--ink,#232620);cursor:pointer}
 #sn2 .tabs{display:flex;gap:6px;padding:8px 14px;background:var(--surface,#fff);border-bottom:1px solid var(--line,#dfe3d7)}
 #sn2 .tabs button{flex:1;font:inherit;font-weight:800;font-size:15px;min-height:44px;border-radius:12px;border:1px solid var(--line,#dfe3d7);background:transparent;color:var(--ink,#232620);cursor:pointer}
-#sn2 .tabs button[aria-pressed="true"]{background:var(--green,#61b000);border-color:var(--green,#61b000);color:#fff}
+#sn2 .tabs button[aria-pressed="true"]{background:var(--btn-green,#3F7A00);border-color:var(--btn-green,#3F7A00);color:var(--on-green,#fff)}
 #sn2 .body{flex:1;overflow:auto;padding:14px 14px calc(24px + env(safe-area-inset-bottom));max-width:620px;width:100%;margin:0 auto;box-sizing:border-box}
 #sn2 .card{background:var(--surface,#fff);border:1px solid var(--line,#dfe3d7);border-radius:16px;padding:14px;margin-bottom:12px}
 #sn2 .card h3{margin:0 0 8px;font-size:16px}
 #sn2 .eyebrow{font-size:12px;font-weight:800;letter-spacing:.06em;color:var(--green-deep,#436c06);text-transform:uppercase}
 #sn2 .muted{color:var(--ink-2,#4b4f46);font-size:14px}
-#sn2 .big{width:100%;font:inherit;font-size:19px;font-weight:800;min-height:62px;border:0;border-radius:16px;background:var(--green,#61b000);color:#fff;cursor:pointer}
+#sn2 .big{width:100%;font:inherit;font-size:19px;font-weight:800;min-height:62px;border:0;border-radius:16px;background:var(--btn-green,#3F7A00);color:var(--on-green,#fff);cursor:pointer}
 #sn2 .big.rec{background:#c8452c}
 #sn2 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 #sn2 .btn2{font:inherit;font-weight:800;font-size:15px;min-height:44px;padding:8px 14px;border-radius:12px;border:1px solid var(--line,#dfe3d7);background:var(--surface-2,#eef1e8);color:var(--ink,#232620);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
-#sn2 .btn2.g{background:var(--green,#61b000);border-color:var(--green,#61b000);color:#fff}
+#sn2 .btn2.g{background:var(--btn-green,#3F7A00);border-color:var(--btn-green,#3F7A00);color:var(--on-green,#fff)}
 #sn2 .live{max-height:150px;overflow:auto;font-size:14px;line-height:1.5;color:var(--ink-2,#4b4f46);background:var(--surface-2,#eef1e8);border-radius:10px;padding:8px 10px;margin-top:10px;white-space:pre-wrap}
 #sn2 .dot{display:inline-block;width:12px;height:12px;border-radius:50%;background:#c8452c;margin-right:6px;animation:sn2p 1.2s infinite}
 @keyframes sn2p{50%{opacity:.25}}
@@ -767,8 +779,9 @@ ta.addEventListener('input',function(){ try{ localStorage.setItem(NKEY,JSON.stri
 (function(){
   if(window.__sn2) return; window.__sn2 = true;
   /* ---------- the message this Sunday (newest in MESSAGES; staff can add outline:[…] and verses:[…] on the Weekly Update page) ---------- */
+  function localYMD(){ var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }  /* 7 Oct deep check: the phone's own date, not UTC */
   var MSGS = (typeof MESSAGES !== 'undefined' ? MESSAGES.slice() : []).sort(function(a,b){ return String(b.date).localeCompare(String(a.date)); });
-  var CUR = MSGS[0] || { id:'none', title:'This Sunday', series:'', ref:'', who:'', date:new Date().toISOString().slice(0,10) };
+  var CUR = MSGS[0] || { id:'none', title:'This Sunday', series:'', ref:'', who:'', date:localYMD() };
   var V1_SLIDES = { u9XnGO5gWsQ:[["The parable",["A widow who would not quit — and a judge who finally listened (Luke 18:1–8)","Jesus told it “so they would always pray and not give up” (v.1)"]],["Persistent ≠ pestering",["God is not the reluctant judge — the parable argues from lesser to greater","If an unjust judge answers persistence, how much more a loving Father"]],["Why keep praying?",["Persistence changes US — it shapes what we actually want","Delay is not denial","“Will He find faith on the earth?” — the real question is ours (v.8)"]],["This week",["Pick ONE prayer you had quietly given up on","Bring it back every day this week","Tell one person you’re praying — let them ask you about it"]]] };
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
   function fmtT(s){ s = Math.max(0, Math.round(s || 0)); var h = Math.floor(s/3600), m = Math.floor(s%3600/60), x = s%60; return (h ? h + ':' + String(m).padStart(2,'0') : m) + ':' + String(x).padStart(2,'0'); }
@@ -812,17 +825,17 @@ ta.addEventListener('input',function(){ try{ localStorage.setItem(NKEY,JSON.stri
   /* ---------- the screen ---------- */
   var W = document.createElement('div'); W.id = 'sn2'; W.setAttribute('role', 'dialog'); W.setAttribute('aria-label', 'Sermon notes'); document.body.appendChild(W);
   var S = null, TAB = 'during';              /* the open session */
-  function newSession(){ return { id:'s' + Date.now().toString(36), vid:CUR.id, title:(CUR.series && CUR.series !== 'Standalone' ? CUR.series + ' · ' : '') + (CUR.title || 'Sermon'), ref:CUR.ref || '', who:CUR.who || '', date:new Date().toISOString().slice(0,10), dur:0, words:'', notes:[], summary:'', aiq:'', answers:{}, hasAudio:false, created:Date.now() }; }
+  function newSession(){ return { id:'s' + Date.now().toString(36), vid:CUR.id, title:(CUR.series && CUR.series !== 'Standalone' ? CUR.series + ' · ' : '') + (CUR.title || 'Sermon'), ref:CUR.ref || '', who:CUR.who || '', date:localYMD(), dur:0, words:'', notes:[], summary:'', aiq:'', answers:{}, hasAudio:false, created:Date.now() }; }
   function migrateV1(s){ try{ var old = JSON.parse(localStorage.getItem('note:' + s.vid) || '""'); if(old && !s.notes.length) s.notes.push({ t:null, text:String(old) }); }catch(e){} }
   function open(){ W.classList.add('on'); document.body.style.overflow = 'hidden';
     allS().then(function(list){ var mine = (list || []).filter(function(x){ return x.vid === CUR.id; }).sort(function(a,b){ return b.created - a.created; })[0];
-      S = mine || newSession(); if(!mine) migrateV1(S); TAB = (S.dur || S.words) && !REC ? 'after' : 'during'; draw(); }).catch(function(){ S = newSession(); draw(); }); }
+      S = mine || newSession(); if(!mine) migrateV1(S); else if(mergeLS(S)) save(); TAB = (S.dur || S.words) && !REC ? 'after' : 'during'; draw(); }).catch(function(){ S = newSession(); draw(); }); }
   function close(){ if(REC){ if(!confirm('Stop recording and close?')) return; stopRec(); } W.classList.remove('on'); document.body.style.overflow = ''; try{ if(PLAYER) PLAYER.pause(); }catch(e){} }
   window.openSermonNotes = open;
   var ob = document.getElementById('sermonNotesBtn'); if(ob) ob.onclick = open;
 
   function header(){ return '<div class="hd"><b>📝 Sermon Notes</b><button type="button" data-a="lib">📚 Library</button><button type="button" data-a="x" aria-label="Close">✕</button></div>'
-    + '<div class="tabs"><button type="button" data-tab="during" aria-pressed="' + (TAB === 'during') + '">🎙 During</button><button type="button" data-tab="after" aria-pressed="' + (TAB === 'after') + '">✨ After</button></div>'; }
+    + '<div class="tabs"><button type="button" data-sntab="during" aria-pressed="' + (TAB === 'during') + '">🎙 During</button><button type="button" data-sntab="after" aria-pressed="' + (TAB === 'after') + '">✨ After</button></div>'; }
   function msgCard(){ var slides = (CUR.outline && CUR.outline.length) ? CUR.outline : (V1_SLIDES[CUR.id] || null), verses = [].concat(CUR.ref ? [CUR.ref] : [], CUR.verses || []);
     return '<div class="card"><div class="eyebrow">' + esc(S.vid === CUR.id ? 'This Sunday' : 'Sermon') + (CUR.series && CUR.series !== 'Standalone' ? ' · ' + esc(CUR.series) : '') + '</div>'
       + '<h3 style="font-size:20px;margin:4px 0 2px">' + esc(S.title) + '</h3><div class="muted">' + [S.ref, S.who, niceDate(S.date)].filter(Boolean).map(esc).join(' · ') + '</div>'
@@ -874,7 +887,22 @@ ta.addEventListener('input',function(){ try{ localStorage.setItem(NKEY,JSON.stri
   var PLAYER = null;
   function draw(){ W.innerHTML = header() + '<div class="body">' + (TAB === 'during' ? drawDuring() : drawAfter()) + '</div>';
     if(TAB === 'after' && S.hasAudio){ var a = W.querySelector('#sn2Audio'); PLAYER = a; getA(S.id).then(function(b){ if(b && a){ a.src = URL.createObjectURL(b); } }); } }
-  function save(){ return putS(S).catch(function(){}); }
+  function save(){ var s0 = S; return putS(s0).then(function(){ return latestFor(s0.vid); }).then(function(l){ if(!l || l.id === s0.id) mirror(s0); }).catch(function(){}); }
+  /* 7 Oct deep check: ONE place for "My notes". The Watch screen's notes box reads and writes this same session
+     (one line = one note; timestamps kept for lines that didn't change); note:<id> in localStorage is a mirror. */
+  function latestFor(vid){ return allS().then(function(list){ return (list || []).filter(function(x){ return x.vid === vid; }).sort(function(a,b){ return b.created - a.created; })[0] || null; }); }
+  function mirror(s){ try{ localStorage.setItem('note:' + s.vid, JSON.stringify(s.notes.map(function(n){ return n.text; }).join('\n'))); }catch(e){} }
+  function mergeLS(s){ var add = 0; try{ var t = JSON.parse(localStorage.getItem('note:' + s.vid) || '""') || ''; var have = {}; s.notes.forEach(function(n){ String(n.text).split('\n').forEach(function(l){ have[l.trim()] = 1; }); });
+      String(t).split('\n').map(function(l){ return l.trim(); }).filter(Boolean).forEach(function(l){ if(!have[l]){ have[l] = 1; s.notes.push({ t:null, text:l }); add++; } }); }catch(e){} return add; }
+  window.__snNotes = {
+    get:function(vid){ return latestFor(vid).then(function(s){ if(!s) return null; if(mergeLS(s)) putS(s).catch(function(){}); if(S && S.id === s.id) S.notes = s.notes; return s.notes.map(function(n){ return n.text; }).join('\n'); }); },
+    set:function(vid, text, meta){ return latestFor(vid).then(function(s){
+      if(!s){ if(!String(text || '').trim()) return; s = newSession(); s.vid = vid; if(meta){ s.title = meta.title || s.title; s.ref = meta.ref || ''; s.who = meta.who || ''; s.date = meta.date || s.date; } }
+      var old = s.notes.slice();
+      s.notes = String(text || '').split('\n').map(function(l){ return l.trim(); }).filter(Boolean).map(function(l){ for(var i = 0; i < old.length; i++){ if(String(old[i].text).trim() === l) return old.splice(i, 1)[0]; } return { t:null, text:l }; });
+      if(S && S.id === s.id) S.notes = s.notes;
+      return putS(s); }).catch(function(){}); }
+  };
 
   /* ---------- clicks ---------- */
   W.addEventListener('click', function(e){
@@ -883,7 +911,7 @@ ta.addEventListener('input',function(){ try{ localStorage.setItem(NKEY,JSON.stri
     if(a === 'x') return close();
     if(a === 'lib') return drawLib();
     if(a === 'back') return draw();
-    if(el.hasAttribute('data-tab')){ TAB = el.getAttribute('data-tab'); return draw(); }
+    if(el.hasAttribute('data-sntab')){ TAB = el.getAttribute('data-sntab'); return draw(); }  /* 7 Oct deep check: own attribute — data-tab blanked the app */
     if(a === 'rec') return startRec();
     if(a === 'stop'){ stopRec(); return; }
     if(a === 'add'){ var inp = W.querySelector('#sn2In'), v = (inp.value || '').trim(); if(!v){ inp.focus(); return; } S.notes.push({ t:REC ? Math.round(elapsed()) : null, text:v }); inp.value = ''; save(); var keep = REC; draw(); if(keep) setTimeout(function(){ var i2 = W.querySelector('#sn2In'); if(i2) i2.focus(); }, 50); return; }

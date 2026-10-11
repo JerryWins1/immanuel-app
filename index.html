@@ -381,7 +381,7 @@ label{display:block;font-size:13px;font-weight:700;color:var(--ink-2);margin-bot
         </div>
       </div>
     </div>
-    <p class="footer">Immanuel Church App · v1.4 · 2026-10-07</p>
+    <p class="footer">Immanuel Church App · v1.5 · 2026-10-11</p>
   </section>
 
   <nav class="tabbar" aria-label="Main">
@@ -534,14 +534,18 @@ function openMessage(id){
   /* 7 Oct deep check: the same notes as 📝 Sermon Notes — one store for both */
   const snMeta={title:(m.series&&m.series!=="Standalone"?m.series+" · ":"")+m.title,ref:m.ref||"",who:m.who||"",date:m.date};
   if(window.__snNotes) window.__snNotes.get(id).then(txt=>{const ta=$("#note"); if(txt!=null&&ta&&!ta.__typed&&ta.value!==txt){ta.value=txt;$("#note-saved").textContent=txt?"Saved":"";}}).catch(()=>{});
-  let t; $("#note").addEventListener("input",e=>{e.target.__typed=true;clearTimeout(t);$("#note-saved").textContent="Saving…";t=setTimeout(()=>{store.set("note:"+id,e.target.value);if(window.__snNotes)window.__snNotes.set(id,e.target.value,snMeta);$("#note-saved").textContent="Saved "+new Date().toLocaleTimeString([], {hour:"numeric",minute:"2-digit"});},500)});
+  /* 11 Oct (pass B): the note is kept on every keystroke, so "Saved" shows at once and the "Notes saved" mark on the
+     Messages list is right the moment you go back (it used to wait half a second, and lagged if you left quickly). */
+  let t; const flushSN=()=>{ if(t){ clearTimeout(t); t=null; const ta=$("#note"); if(ta&&window.__snNotes) window.__snNotes.set(id,ta.value,snMeta); } };
+  $("#note").addEventListener("input",e=>{e.target.__typed=true;store.set("note:"+id,e.target.value);$("#note-saved").textContent=e.target.value.trim()?"Saved ✓":"";renderMessages();clearTimeout(t);t=setTimeout(()=>{t=null;if(window.__snNotes)window.__snNotes.set(id,e.target.value,snMeta);},500)});
+  $("#sheet").__flushNote=flushSN;
   $("#share-btn").addEventListener("click",async()=>{
     const data={title:`Immanuel Church — ${m.title}`,text:`${m.title} · ${m.who}`,url:YT(id)};
     if(navigator.share){try{await navigator.share(data)}catch{}}
     else{try{await navigator.clipboard.writeText(YT(id));toast("Link copied")}catch{toast(YT(id))}}
   });
 }
-$("#sheet-back").addEventListener("click",()=>{$("#sheet").classList.remove("open");document.body.style.overflow="";renderMessages();});
+$("#sheet-back").addEventListener("click",()=>{try{ if($("#sheet").__flushNote) $("#sheet").__flushNote(); }catch(e){} $("#sheet").classList.remove("open");document.body.style.overflow="";renderMessages();});
 
 /* home: the newest message and the next baptism, straight from the lists above (v1.2) */
 function renderHome(){
@@ -766,7 +770,7 @@ ta.addEventListener('input',function(){ try{ localStorage.setItem(NKEY,JSON.stri
 #sn2 .note .t{font-weight:800;color:var(--green-deep,#436c06);min-width:48px;font-size:14px;background:none;border:0;cursor:pointer;text-align:left;padding:0}
 #sn2 textarea,#sn2 input[type=text]{width:100%;box-sizing:border-box;font:inherit;font-size:16px;padding:10px 12px;border:1px solid var(--line,#dfe3d7);border-radius:12px;background:var(--surface,#fff);color:var(--ink,#232620)}
 #sn2 .verse{border-left:3px solid var(--green,#61b000);background:var(--surface-2,#eef1e8);border-radius:0 10px 10px 0;padding:8px 10px;margin:6px 0;font-size:14.5px;line-height:1.5}
-#sn2 .vref{font:inherit;font-weight:800;font-size:14px;padding:7px 11px;border-radius:999px;border:1px solid var(--green,#61b000);background:transparent;color:var(--green-deep,#436c06);cursor:pointer;min-height:40px;margin:3px 4px 3px 0}
+#sn2 .vref{font:inherit;font-weight:800;font-size:14px;padding:7px 11px;border-radius:999px;border:1px solid var(--green,#61b000);background:transparent;color:var(--green-deep,#436c06);cursor:pointer;min-height:44px;margin:3px 4px 3px 0}
 #sn2 .q{margin:10px 0}
 #sn2 .q b{display:block;margin-bottom:4px;font-size:15px}
 #sn2 .lib{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line,#dfe3d7)}
@@ -782,6 +786,9 @@ ta.addEventListener('input',function(){ try{ localStorage.setItem(NKEY,JSON.stri
   function localYMD(){ var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }  /* 7 Oct deep check: the phone's own date, not UTC */
   var MSGS = (typeof MESSAGES !== 'undefined' ? MESSAGES.slice() : []).sort(function(a,b){ return String(b.date).localeCompare(String(a.date)); });
   var CUR = MSGS[0] || { id:'none', title:'This Sunday', series:'', ref:'', who:'', date:localYMD() };
+  /* 11 Oct (pass B): a sermon's date is the day it was preached (its date in MESSAGES), not the day the notes were opened */
+  function msgDate(vid){ for(var i = 0; i < MSGS.length; i++){ if(MSGS[i].id === vid && MSGS[i].date) return String(MSGS[i].date).slice(0,10); } return ''; }
+  function dateOf(s){ return (s && msgDate(s.vid)) || (s && s.date) || localYMD(); }
   var V1_SLIDES = { u9XnGO5gWsQ:[["The parable",["A widow who would not quit — and a judge who finally listened (Luke 18:1–8)","Jesus told it “so they would always pray and not give up” (v.1)"]],["Persistent ≠ pestering",["God is not the reluctant judge — the parable argues from lesser to greater","If an unjust judge answers persistence, how much more a loving Father"]],["Why keep praying?",["Persistence changes US — it shapes what we actually want","Delay is not denial","“Will He find faith on the earth?” — the real question is ours (v.8)"]],["This week",["Pick ONE prayer you had quietly given up on","Bring it back every day this week","Tell one person you’re praying — let them ask you about it"]]] };
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
   function fmtT(s){ s = Math.max(0, Math.round(s || 0)); var h = Math.floor(s/3600), m = Math.floor(s%3600/60), x = s%60; return (h ? h + ':' + String(m).padStart(2,'0') : m) + ':' + String(x).padStart(2,'0'); }
@@ -825,7 +832,7 @@ ta.addEventListener('input',function(){ try{ localStorage.setItem(NKEY,JSON.stri
   /* ---------- the screen ---------- */
   var W = document.createElement('div'); W.id = 'sn2'; W.setAttribute('role', 'dialog'); W.setAttribute('aria-label', 'Sermon notes'); document.body.appendChild(W);
   var S = null, TAB = 'during';              /* the open session */
-  function newSession(){ return { id:'s' + Date.now().toString(36), vid:CUR.id, title:(CUR.series && CUR.series !== 'Standalone' ? CUR.series + ' · ' : '') + (CUR.title || 'Sermon'), ref:CUR.ref || '', who:CUR.who || '', date:localYMD(), dur:0, words:'', notes:[], summary:'', aiq:'', answers:{}, hasAudio:false, created:Date.now() }; }
+  function newSession(){ return { id:'s' + Date.now().toString(36), vid:CUR.id, title:(CUR.series && CUR.series !== 'Standalone' ? CUR.series + ' · ' : '') + (CUR.title || 'Sermon'), ref:CUR.ref || '', who:CUR.who || '', date:(CUR.date ? String(CUR.date).slice(0,10) : localYMD()), dur:0, words:'', notes:[], summary:'', aiq:'', answers:{}, hasAudio:false, created:Date.now() }; }
   function migrateV1(s){ try{ var old = JSON.parse(localStorage.getItem('note:' + s.vid) || '""'); if(old && !s.notes.length) s.notes.push({ t:null, text:String(old) }); }catch(e){} }
   function open(){ W.classList.add('on'); document.body.style.overflow = 'hidden';
     allS().then(function(list){ var mine = (list || []).filter(function(x){ return x.vid === CUR.id; }).sort(function(a,b){ return b.created - a.created; })[0];
@@ -838,13 +845,13 @@ ta.addEventListener('input',function(){ try{ localStorage.setItem(NKEY,JSON.stri
     + '<div class="tabs"><button type="button" data-sntab="during" aria-pressed="' + (TAB === 'during') + '">🎙 During</button><button type="button" data-sntab="after" aria-pressed="' + (TAB === 'after') + '">✨ After</button></div>'; }
   function msgCard(){ var slides = (CUR.outline && CUR.outline.length) ? CUR.outline : (V1_SLIDES[CUR.id] || null), verses = [].concat(CUR.ref ? [CUR.ref] : [], CUR.verses || []);
     return '<div class="card"><div class="eyebrow">' + esc(S.vid === CUR.id ? 'This Sunday' : 'Sermon') + (CUR.series && CUR.series !== 'Standalone' ? ' · ' + esc(CUR.series) : '') + '</div>'
-      + '<h3 style="font-size:20px;margin:4px 0 2px">' + esc(S.title) + '</h3><div class="muted">' + [S.ref, S.who, niceDate(S.date)].filter(Boolean).map(esc).join(' · ') + '</div>'
+      + '<h3 style="font-size:20px;margin:4px 0 2px">' + esc(S.title) + '</h3><div class="muted">' + [S.ref, S.who, niceDate(dateOf(S))].filter(Boolean).map(esc).join(' · ') + '</div>'
       + (slides ? slides.map(function(sl){ var h = Array.isArray(sl) ? sl[0] : sl.h, pts = Array.isArray(sl) ? sl[1] : (sl.pts || []); return '<div class="verse"><b>' + esc(h) + '</b><ul style="margin:6px 0 0;padding-left:18px">' + pts.map(function(p){ return '<li>' + esc(p) + '</li>'; }).join('') + '</ul></div>'; }).join('') : '')
       + (verses.length ? '<div style="margin-top:8px"><div class="muted" style="margin-bottom:4px">Bible verses — tap to read:</div>' + verses.map(function(v){ return '<button type="button" class="vref" data-v="' + esc(v) + '">📖 ' + esc(v) + '</button>'; }).join('') + '<div data-vout></div></div>' : '')
       + '</div>'; }
   function notesCard(){ return '<div class="card"><h3>✍️ My notes</h3><div class="row" style="flex-wrap:nowrap"><input type="text" id="sn2In" placeholder="What stood out… (stays on your phone)" aria-label="Add a note"><button type="button" class="btn2 g" data-a="add">Add</button></div>'
       + (REC ? '<div class="muted" style="margin-top:6px">Each note is stamped with its moment in the recording — tap the time later to hear that part.</div>' : '')
-      + '<div style="margin-top:8px">' + (S.notes.length ? S.notes.map(function(n, i){ return '<div class="note"><button type="button" class="t" data-play="' + (n.t == null ? '' : n.t) + '" aria-label="Play from here">' + (n.t == null ? '•' : '▶ ' + fmtT(n.t)) + '</button><div style="flex:1">' + esc(n.text) + '</div><button type="button" class="btn2" style="min-height:36px;padding:4px 10px" data-del="' + i + '" aria-label="Remove note">✕</button></div>'; }).join('') : '<div class="muted">No notes yet.</div>') + '</div></div>'; }
+      + '<div style="margin-top:8px">' + (S.notes.length ? S.notes.map(function(n, i){ return '<div class="note"><button type="button" class="t" data-play="' + (n.t == null ? '' : n.t) + '" aria-label="Play from here">' + (n.t == null ? '•' : '▶ ' + fmtT(n.t)) + '</button><div style="flex:1">' + esc(n.text) + '</div><button type="button" class="btn2" style="min-height:44px;min-width:44px;padding:4px 10px" data-del="' + i + '" aria-label="Remove note">✕</button></div>'; }).join('') : '<div class="muted">No notes yet.</div>') + '</div></div>'; }
   function recCard(){ if(REC) return '<div class="card"><div class="row" style="justify-content:space-between"><b><span class="dot"></span>Recording · <span id="sn2T">' + fmtT(elapsed()) + '</span></b><span class="muted">Keep the screen on — it dims by itself</span></div>'
       + '<div class="row" style="margin-top:10px"><button type="button" class="big rec" data-a="stop" style="flex:1">⏹ Stop — the sermon is over</button></div>'
       + '<div class="live" id="sn2Live" aria-live="polite">' + (S.words ? esc(S.words.slice(-1200)) : (SR_OK ? 'The words will appear here as they are said…' : 'Recording the sound. (Writing the words live isn’t available on this phone — the recording is safe.)')) + '</div></div>';
@@ -866,7 +873,7 @@ ta.addEventListener('input',function(){ try{ localStorage.setItem(NKEY,JSON.stri
         + '<textarea id="sn2P_' + kind + '" rows="4" placeholder="3 · Paste the answer here" style="margin-top:8px"></textarea><div class="row" style="margin-top:6px"><button type="button" class="btn2 g" data-save="' + kind + '">Save it</button></div>') + '</div>'; }
   function drawAfter(){
     var refs = findRefs([S.ref, S.words, S.notes.map(function(n){ return n.text; }).join(' '), (CUR.verses || []).join(' ')].join(' '));
-    var h = '<div class="card"><div class="eyebrow">' + esc(niceDate(S.date)) + (S.dur ? ' · ' + fmtT(S.dur) : '') + '</div><h3 style="font-size:20px;margin:4px 0">' + esc(S.title) + '</h3>'
+    var h = '<div class="card"><div class="eyebrow">' + esc(niceDate(dateOf(S))) + (S.dur ? ' · ' + fmtT(S.dur) : '') + '</div><h3 style="font-size:20px;margin:4px 0">' + esc(S.title) + '</h3>'
       + (S.hasAudio ? '<audio id="sn2Audio" controls preload="metadata"></audio>' : '<div class="muted">No recording for this one — the notes and questions still work.</div>') + '</div>';
     h += '<div class="card"><h3>📜 Scriptures in this sermon</h3>' + (refs.length ? refs.map(function(r){ return '<button type="button" class="vref" data-v="' + esc(r) + '">📖 ' + esc(r) + '</button>'; }).join('') + '<div data-vout></div><div class="muted" style="margin-top:6px">Found in the words, your notes and this Sunday’s verses. Text: World English Bible (free to share).</div>' : '<div class="muted">None found yet. They appear here when the words or your notes mention one, e.g. “John 3:16”.</div>') + '</div>';
     h += aiBox('sum', S.summary);
@@ -877,11 +884,11 @@ ta.addEventListener('input',function(){ try{ localStorage.setItem(NKEY,JSON.stri
     h += '<div class="card"><h3>📤 Share</h3><div class="muted">Send the summary, questions and scriptures to your small group or family.</div><div class="row" style="margin-top:8px"><button type="button" class="btn2 g" data-a="share">Share this sermon</button></div></div>';
     return h; }
   function shareText(){ var refs = findRefs([S.ref, S.words, S.notes.map(function(n){ return n.text; }).join(' ')].join(' '));
-    return '📝 ' + S.title + (S.ref ? ' (' + S.ref + ')' : '') + ' — ' + niceDate(S.date) + '\n\n' + (S.summary ? S.summary + '\n\n' : '') + (refs.length ? '📜 ' + refs.join(' · ') + '\n\n' : '') + '💬 Questions:\n' + QS.map(function(q, i){ return (i+1) + '. ' + q; }).join('\n') + (S.aiq ? '\n\n' + S.aiq : '') + '\n\n— from the Immanuel app'; }
+    return '📝 ' + S.title + (S.ref ? ' (' + S.ref + ')' : '') + ' — ' + niceDate(dateOf(S)) + '\n\n' + (S.summary ? S.summary + '\n\n' : '') + (refs.length ? '📜 ' + refs.join(' · ') + '\n\n' : '') + '💬 Questions:\n' + QS.map(function(q, i){ return (i+1) + '. ' + q; }).join('\n') + (S.aiq ? '\n\n' + S.aiq : '') + '\n\n— from the Immanuel app'; }
 
   function drawLib(){ allS().then(function(list){ list = (list || []).sort(function(a,b){ return b.created - a.created; });
     W.innerHTML = '<div class="hd"><b>📚 My sermons</b><button type="button" data-a="back">‹ Back</button><button type="button" data-a="x" aria-label="Close">✕</button></div><div class="body">'
-      + '<div class="card">' + (list.length ? list.map(function(s){ return '<div class="lib"><div class="grow"><b>' + esc(s.title) + '</b><div class="muted">' + esc(niceDate(s.date)) + (s.dur ? ' · ' + fmtT(s.dur) : '') + (s.notes && s.notes.length ? ' · ' + s.notes.length + ' notes' : '') + (s.summary ? ' · ✨' : '') + '</div></div><button type="button" class="btn2 g" data-openS="' + s.id + '">Open</button><button type="button" class="btn2" data-delS="' + s.id + '" aria-label="Delete">🗑</button></div>'; }).join('') : '<div class="muted">No sermons saved yet. Record one on Sunday — it lands here.</div>') + '</div></div>';
+      + '<div class="card">' + (list.length ? list.map(function(s){ return '<div class="lib"><div class="grow"><b>' + esc(s.title) + '</b><div class="muted">' + esc(niceDate(dateOf(s))) + (s.dur ? ' · ' + fmtT(s.dur) : '') + (s.notes && s.notes.length ? ' · ' + s.notes.length + (s.notes.length === 1 ? ' note' : ' notes') : '') + (s.summary ? ' · ✨' : '') + '</div></div><button type="button" class="btn2 g" data-openS="' + s.id + '">Open</button><button type="button" class="btn2" data-delS="' + s.id + '" aria-label="Delete">🗑</button></div>'; }).join('') : '<div class="muted">No sermons saved yet. Record one on Sunday — it lands here.</div>') + '</div></div>';
   }); }
 
   var PLAYER = null;
@@ -891,7 +898,7 @@ ta.addEventListener('input',function(){ try{ localStorage.setItem(NKEY,JSON.stri
   /* 7 Oct deep check: ONE place for "My notes". The Watch screen's notes box reads and writes this same session
      (one line = one note; timestamps kept for lines that didn't change); note:<id> in localStorage is a mirror. */
   function latestFor(vid){ return allS().then(function(list){ return (list || []).filter(function(x){ return x.vid === vid; }).sort(function(a,b){ return b.created - a.created; })[0] || null; }); }
-  function mirror(s){ try{ localStorage.setItem('note:' + s.vid, JSON.stringify(s.notes.map(function(n){ return n.text; }).join('\n'))); }catch(e){} }
+  function mirror(s){ try{ localStorage.setItem('note:' + s.vid, JSON.stringify(s.notes.map(function(n){ return n.text; }).join('\n'))); }catch(e){} try{ if(typeof renderMessages === 'function') renderMessages(); }catch(e){} }
   function mergeLS(s){ var add = 0; try{ var t = JSON.parse(localStorage.getItem('note:' + s.vid) || '""') || ''; var have = {}; s.notes.forEach(function(n){ String(n.text).split('\n').forEach(function(l){ have[l.trim()] = 1; }); });
       String(t).split('\n').map(function(l){ return l.trim(); }).filter(Boolean).forEach(function(l){ if(!have[l]){ have[l] = 1; s.notes.push({ t:null, text:l }); add++; } }); }catch(e){} return add; }
   window.__snNotes = {
@@ -915,7 +922,7 @@ ta.addEventListener('input',function(){ try{ localStorage.setItem(NKEY,JSON.stri
     if(a === 'rec') return startRec();
     if(a === 'stop'){ stopRec(); return; }
     if(a === 'add'){ var inp = W.querySelector('#sn2In'), v = (inp.value || '').trim(); if(!v){ inp.focus(); return; } S.notes.push({ t:REC ? Math.round(elapsed()) : null, text:v }); inp.value = ''; save(); var keep = REC; draw(); if(keep) setTimeout(function(){ var i2 = W.querySelector('#sn2In'); if(i2) i2.focus(); }, 50); return; }
-    if(el.hasAttribute('data-del')){ S.notes.splice(+el.getAttribute('data-del'), 1); save(); return draw(); }
+    if(el.hasAttribute('data-del')){ var di = +el.getAttribute('data-del'), dn = S.notes[di]; if(!dn) return; var dt = String(dn.text || ''); if(!confirm('Remove this note?\n\n“' + (dt.length > 80 ? dt.slice(0, 80) + '…' : dt) + '”')) return; S.notes.splice(di, 1); save(); return draw(); }   /* 11 Oct (pass B): asks first */
     if(el.hasAttribute('data-play')){ var t = el.getAttribute('data-play'); if(t === '') return; if(REC){ toast2('You can listen after the sermon'); return; } if(TAB !== 'after'){ TAB = 'after'; draw(); } setTimeout(function(){ var p = W.querySelector('#sn2Audio'); if(p){ var go = function(){ try{ p.currentTime = +t; p.play(); }catch(x){} }; if(p.readyState >= 1) go(); else p.addEventListener('loadedmetadata', go, {once:true}); p.scrollIntoView({block:'center'}); } }, 300); return; }
     if(el.hasAttribute('data-v')){ var ref = el.getAttribute('data-v'), out = el.parentElement.querySelector('[data-vout]') || el.closest('.card').querySelector('[data-vout]'); if(!out) return; out.innerHTML = '<div class="verse">Opening ' + esc(ref) + '…</div>';
       verseText(ref).then(function(t){ out.innerHTML = '<div class="verse"><b>' + esc(ref) + '</b><div style="white-space:pre-wrap;margin-top:4px">' + esc(t) + '</div></div>'; }).catch(function(){ out.innerHTML = '<div class="verse"><b>' + esc(ref) + '</b> — couldn’t open it just now (no signal?). <a href="https://www.biblegateway.com/passage/?search=' + encodeURIComponent(ref) + '" target="_blank" rel="noopener">Read it on Bible Gateway ↗</a></div>'; }); return; }
